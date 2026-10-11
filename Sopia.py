@@ -15,6 +15,16 @@ API_KEY = os.environ.get("API_KEY")
 if not API_KEY:
     raise RuntimeError("API_KEY environment variable is not set. Please set it before running this script by using export API_KEY = 'your API key here'.")   
 
+def thumbnailTitle(upload):
+    #dummy function
+    return
+    
+def thumbnailImg(snippet):
+    thumbnail = snippet["thumbnails"]["maxres"]["url"]
+    image = requests.get(thumbnail).content
+    img = Image.open(BytesIO(image)).resize((256, 144))
+    return ImageTk.PhotoImage(img)
+
 def playVideo(url):
     result = subprocess.run(
         ["yt-dlp", "-g", url],
@@ -81,6 +91,7 @@ def starting_script():
     uploads = file("uploads.json", response)
     
     counter = 0
+    thumbnails = []
     uploadsList = [
         "Lastest videos:"
         "\n"
@@ -99,14 +110,26 @@ def starting_script():
         videoData = video["items"][0]
         videoSnippet = videoData["snippet"]
         videoStats = videoData["statistics"]
-        uploadsList.append(f'{title}     Views: {videoStats["viewCount"]}     Likes: {videoStats["likeCount"]}     Comments {videoStats["commentCount"]}')
-        if videoSnippet["liveBroadcastContent"] == "upcoming":
-            liveStreamingDetails = videoData["liveStreamingDetails"]
-            uploadsList.append(f'This is an upcoming live or premier video, please come back later at {time(liveStreamingDetails["scheduledStartTime"])}')
+        uploadsList.append(f'{title}')
+        uploadsList.append(f'Views: {videoStats["viewCount"]}')
+        uploadsList.append(f'Likes: {videoStats["likeCount"]}')
+        uploadsList.append(f'Comments {videoStats["commentCount"]}')
+        thumbnails.append(thumbnailImg(videoSnippet))
+        #if videoSnippet["liveBroadcastContent"] == "upcoming":
+        #    liveStreamingDetails = videoData["liveStreamingDetails"]
+        #    uploadsList.append(f'This is an upcoming live or premier video, please come back later at {time(liveStreamingDetails["scheduledStartTime"])}')
         counter += 1
         uploadsList.append("\n")
-    uploadsLabel.config(text="\n".join(uploadsList), compound="left")
-        
+    thumbnail1.config(image=thumbnails[0], compound="left")
+    thumbnail1.image = thumbnails[0]
+    thumbnail2.config(image=thumbnails[1], compound="left")
+    thumbnail2.image = thumbnails[1]
+    thumbnail3.config(image=thumbnails[2], compound="left")
+    thumbnail3.image = thumbnails[2]
+    thumbnail4.config(image=thumbnails[3], compound="left")
+    thumbnail4.image = thumbnails[3]
+    thumbnail5.config(image=thumbnails[4], compound="left")
+    thumbnail5.image = thumbnails[4]
 
 
 root = ttk.Window(title="SopiaOS", themename="cyborg", size=(1920, 1080))
@@ -127,10 +150,16 @@ countryLabel = ttk.Label(row)
 viewsLabel = ttk.Label(row, bootstyle=INFO)
 subsLabel = ttk.Label(row, bootstyle=SUCCESS)
 videosLabel = ttk.Label(row)
-uploadsLabel = ttk.Label(row)
-uploadsLabel.grid(row=10, column=2, sticky="w")
-
-button1 = ttk.Button()
+thumbnail1 = ttk.Label(row)
+thumbnail1.grid(row=10, column=1, rowspan=8, sticky="n", padx=(0,10))
+thumbnail2 = ttk.Label(row)
+thumbnail2.grid(row=20, column=1, rowspan=8, sticky="n", padx=(0,10))
+thumbnail3 = ttk.Label(row)
+thumbnail3.grid(row=30, column=1, rowspan=8, sticky="n", padx=(0,10))
+thumbnail4 = ttk.Label(row)
+thumbnail4.grid(row=40, column=1, rowspan=8, sticky="n", padx=(0,10))
+thumbnail5 = ttk.Label(row)
+thumbnail5.grid(row=50, column=1, rowspan=8, sticky="n", padx=(0,10))
 
 for i, lbl in enumerate([titleLabel, nameLabel, handleLabel, createdLabel, countryLabel, viewsLabel, subsLabel, videosLabel]):
     lbl.grid(row=i+1, column=2, sticky="w")
