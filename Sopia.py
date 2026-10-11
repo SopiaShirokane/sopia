@@ -6,20 +6,17 @@ import subprocess
 from datetime import datetime
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-import yt_dlp
 from io import BytesIO
 from PIL import Image, ImageTk
 
+
 API_KEY = os.environ.get("API_KEY")
 if not API_KEY:
-    raise RuntimeError("API_KEY environment variable is not set. Please set it before running this script by using export API_KEY = 'your API key here'.")   
+    raise RuntimeError("API_KEY environment variable is not set. Please set it before running this script by using export API_KEY='your API key here'.")   
 
 def plaympv(url):
     try:
         subprocess.Popen(["mpv", url])    
-    except subprocess.CalledProcessError as e:
-        print(e.stderr)
-        return
     except FileNotFoundError:
         print("mpv is not installed or not on PATH")
         return
@@ -39,6 +36,7 @@ def file(fileName, apiResponse):
         fileData = json.load(f)
     return fileData
     
+
 def thumbnailImg(snippet):
     thumbnail = snippet["thumbnails"]["maxres"]["url"]
     image = requests.get(thumbnail).content
@@ -54,7 +52,7 @@ def thumbnailTitle(upload, value):
     title = s.removeprefix("{'").removesuffix("'}")
     response = requests.get(
         "https://www.googleapis.com/youtube/v3/videos",
-        params={"part": "snippet, statistics, contentDetails, liveStreamingDetails", "id": resourceId["videoId"], "key": API_KEY},
+        params={"part": "snippet, statistics, contentDetails", "id": resourceId["videoId"], "key": API_KEY},
     )
     video = file("video.json", response)
     videoData = video["items"][0]
@@ -62,8 +60,8 @@ def thumbnailTitle(upload, value):
     videoStats = videoData["statistics"]
     uploadsList.append(f'{title}')
     uploadsList.append(f'   Views: {videoStats["viewCount"]}')
-    uploadsList.append(f'   Likes: {videoStats["likeCount"]}')
-    uploadsList.append(f'   Comments: {videoStats["commentCount"]}')
+    uploadsList.append(f'   Likes: {videoStats.get("likeCount", "N/A")}')
+    uploadsList.append(f'   Comments: {videoStats.get("commentCount", "N/A")}')
     uploadsList.append(f'   Release date: {time(videoSnippet["publishedAt"])}')
     link = f'https://www.youtube.com/watch?v={videoData["id"]}'
     return uploadsList, thumbnailImg(videoSnippet), link
@@ -108,7 +106,7 @@ def starting_script():
     thumb4, img4, link4 = thumbnailTitle(uploads, 3)
     thumb5, img5, link5 = thumbnailTitle(uploads, 4)
 
-    thumbnailsTitle.config(text="\nLastest videos:")    
+    thumbnailsTitle.config(text="\nLatest videos:")    
     thumbnail1.config(image=img1, text="\n".join(thumb1), compound="left", cursor="hand2")
     thumbnail1.bind("<Button-1>", lambda event: plaympv(link1))
     thumbnail1.image = img1
@@ -124,6 +122,7 @@ def starting_script():
     thumbnail5.config(image=img5, text="\n".join(thumb5), compound="left", cursor="hand2")
     thumbnail5.bind("<Button-1>", lambda event: plaympv(link5))
     thumbnail5.image = img5
+
 
 root = ttk.Window(title="SopiaOS", themename="cyborg", size=(1920, 1080))
 
